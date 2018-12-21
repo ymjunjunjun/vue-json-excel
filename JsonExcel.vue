@@ -297,7 +297,8 @@ export default {
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
       }
-      return new Blob([u8arr], { type: mime });
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      return new Blob([bom, u8arr], { type: mime });
     }
   } // end methods
 };
