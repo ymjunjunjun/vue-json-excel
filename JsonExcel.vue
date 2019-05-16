@@ -197,14 +197,15 @@ export default {
       //Data
       data.map(function(item) {
         for (let key in item) {
-          let escaped = '=\"' + item[key] + '\"'; // cast Numbers to string
-          if (escaped.match(/[,"\n]/)) {
-            escaped = '"' + escaped.replace(/\"/g, '""') + '"';
-          }
-          csvData.push(escaped);
 					if (format === 'csv') {
+						let escaped = '=\"' + item[key] + '\"'; // cast Numbers to string
+	          if (escaped.match(/[,"\n]/)) {
+	            escaped = '"' + escaped.replace(/\"/g, '""') + '"';
+	          }
+						csvData.push(escaped);
 						csvData.push(",");
 					} else if(format === 'tsv') {
+						csvData.push(item[key]);
 						csvData.push("\t");
 					}
         }
