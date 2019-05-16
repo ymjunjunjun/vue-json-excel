@@ -13,7 +13,7 @@ import download from "downloadjs";
 
 export default {
   props: {
-    // mime type [xls, csv]
+    // mime type [xls, csv, tsv]
     type: {
       type: String,
       default: "xls"
@@ -96,11 +96,17 @@ export default {
         );
       } else if (this.type === "csv") {
         return this.export(
-          this.jsonToCSV(json),
+          this.jsonToFormat(json, 'csv'),
           this.name.replace(".xls", ".csv"),
           "application/csv"
         );
-      }
+			} else if (this.type === "tsv") {
+        return this.export(
+          this.jsonToFormat(json, 'tsv'),
+          this.name.replace(".xls", ".tsv"),
+          "application/tab-separated-values"
+        );
+			}
       return this.export(
         this.jsonToXLS(json),
         this.name,
@@ -167,11 +173,11 @@ export default {
       return xlsTemp.replace("${table}", xlsData);
     },
     /*
-		jsonToCSV
+		jsonToFormat
 		---------------
-		Transform json data into an CSV file.
+		Transform json data into an CSV or TSV file.
 		*/
-    jsonToCSV(data) {
+    jsonToFormat(data, format) {
       var csvData = [];
       //Header
       if (this.title != null) {
@@ -180,19 +186,27 @@ export default {
       //Fields
       for (let key in data[0]) {
         csvData.push(key);
-        csvData.push(",");
+				if (format === 'csv') {
+					csvData.push(",");
+				} else if(format === 'tsv') {
+					csvData.push("\t");
+				}
       }
       csvData.pop();
       csvData.push("\r\n");
       //Data
       data.map(function(item) {
         for (let key in item) {
-          let escapedCSV = '=\"' + item[key] + '\"'; // cast Numbers to string
-          if (escapedCSV.match(/[,"\n]/)) {
-            escapedCSV = '"' + escapedCSV.replace(/\"/g, '""') + '"';
+          let escaped = '=\"' + item[key] + '\"'; // cast Numbers to string
+          if (escaped.match(/[,"\n]/)) {
+            escaped = '"' + escaped.replace(/\"/g, '""') + '"';
           }
-          csvData.push(escapedCSV);
-          csvData.push(",");
+          csvData.push(escaped);
+					if (format === 'csv') {
+						csvData.push(",");
+					} else if(format === 'tsv') {
+						csvData.push("\t");
+					}
         }
         csvData.pop();
         csvData.push("\r\n");
@@ -255,17 +269,17 @@ export default {
       const field = typeof key   !== "object" ? key : key.field;
       let indexes = typeof field !== "string" ? []  : field.split(".");
       let value   = this.defaultValue;
-    
+
       if (!field)
 	      value = item;
       else if( indexes.length > 1 )
         value = this.getValueFromNestedItem(item, indexes);
       else
         value = this.parseValue(item[field]);
-      
+
       if( key.hasOwnProperty('callback'))
         value = this.getValueFromCallback(value, key.callback);
-      
+
       return value;
     },
 
@@ -285,7 +299,7 @@ export default {
       return this.parseValue(value);
     },
     parseValue(value){
-      return value || value === 0 
+      return value || value === 0
           ? value
           : this.defaultValue;
     },
