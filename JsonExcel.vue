@@ -10,6 +10,7 @@
 
 <script>
 import download from "downloadjs";
+const encoding = require('encoding-japanese')
 
 export default {
   props: {
@@ -101,7 +102,7 @@ export default {
           "application/csv"
         );
 			} else if (this.type === "tsv") {
-        return this.export(
+        return this.exportSjisEncodingTsv(
           this.jsonToFormat(json, 'tsv'),
           this.name.replace(".xls", ".tsv"),
           "application/tab-separated-values"
@@ -118,6 +119,10 @@ export default {
 		*/
     export(data, filename, mime) {
       let blob = this.base64ToBlob(data, mime);
+      download(blob, filename, mime);
+    },
+		exportSjisEncodingTsv(data, filename, mime) {
+      let blob = this.base64ToSjisEncodingBlob(data, mime);
       download(blob, filename, mime);
     },
     /*
@@ -314,7 +319,22 @@ export default {
       }
       const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
       return new Blob([bom, u8arr], { type: mime });
-    }
+    },
+		base64ToSjisEncodingBlob(data, mime) {
+			console.log(data)
+			const unicodeList = [];
+			for (let i = 0; i < data.length; i += 1) {
+			  unicodeList.push(data.charCodeAt(i));
+			}
+			console.log(unicodeList)
+
+			// 変換処理の実施
+			const shiftJisCodeList = encoding.convert(unicodeList, 'sjis', 'unicode');
+			console.log(shiftJisCodeList)
+			const uInt8List = new Uint8Array(shiftJisCodeList);
+			console.log(uInt8List)
+      return new Blob([uInt8List], { type: mime });
+		}
   } // end methods
 };
 </script>

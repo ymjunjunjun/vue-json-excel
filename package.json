@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/jecovier/vue-json-excel#readme",
   "dependencies": {
-    "downloadjs": "^1.4.7"
+    "downloadjs": "^1.4.7",
+    "encoding-japanese": "^1.0.29"
   }
 }
